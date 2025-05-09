@@ -1,6 +1,6 @@
 services:
   conductor-server:
-    image: conductor:server
+    image: widyaadebagus/conductor-oss:latest
     container_name: conductor-oss-server
     deploy:
       resources:
