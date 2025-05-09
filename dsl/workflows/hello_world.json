@@ -1,0 +1,32 @@
+{
+    "name": "hello_world",
+    "description": "First Sample Workflow",
+    "version": 1,
+    "inputParameters": ["message"],
+    "tasks": [
+        {
+            "name": "http_request_task",
+            "taskReferenceName": "http_request_task_ref",
+            "inputParameters": {
+                "http_request": {
+                    "method": "GET",
+                    "uri": "https://dummyjson.com/http/200/${workflow.input.message}",
+                    "readTimeOut": 0,
+                    "connectionTimeOut": 0
+                }
+            },
+            "type": "HTTP"
+        }
+    ],
+    "outputParameters": {
+        "status": "${http_request_task_ref.output.response.body.status}",
+        "message": "${http_request_task_ref.output.response.body.message}"
+    },
+    "failureWorkflow": "",
+    "schemaVersion": 2,
+    "restartAble": true,
+    "workflowStatusListenerEnabled": false,
+    "ownerEmail": "widyaadeb@gmail.com",
+    "timeoutPolicy": "TIME_OUT_WF",
+    "timeoutSeconds": 0
+}

@@ -1,0 +1,71 @@
+{
+    "name": "service_saga_cancellation",
+    "description": "Transaction cancellation in inventory workflow",
+    "version": 1,
+    "inputParameters": [],
+    "tasks": [
+        {
+            "name": "json_transform_task",
+            "taskReferenceName": "json_transform_task_ref",
+            "inputParameters": {
+                "parent": "${workflow.input.failedWorkflow}",
+                "queryExpression": "{ orderId: .parent.output.orderId, transactionId: .parent.output.transactionId, failedTaskName: .parent.failedReferenceTaskNames[0] }"
+            },
+            "type": "JSON_JQ_TRANSFORM"
+        },
+        {
+            "name": "switch_rollback_from_task",
+            "taskReferenceName": "switch_rollback_from_task_ref",
+            "inputParameters": {
+                "failedTaskName": "${json_transform_task_ref.output.result.failedTaskName}"
+            },
+            "evaluatorType": "value-param",
+            "expression": "failedTaskName",
+            "type": "SWITCH",
+            "decisionCases": {
+                "create_ledger_ref": [
+                    {
+                        "name": "delete_inventory_task",
+                        "taskReferenceName": "delete_inventory_task_ref",
+                        "inputParameters": {
+                            "transactionId": "${json_transform_task_ref.output.result.transactionId}"
+                        },
+                        "type": "SIMPLE"
+                    },
+                    {
+                        "name": "delete_transaction_task",
+                        "taskReferenceName": "delete_transaction_task_ref_0",
+                        "inputParameters": {
+                            "transactionId": "${json_transform_task_ref.output.result.transactionId}"
+                        },
+                        "type": "SIMPLE"
+                    }
+                ],
+                "create_inventory_ref": [
+                    {
+                        "name": "delete_transaction_task",
+                        "taskReferenceName": "delete_transaction_task_ref_1",
+                        "inputParameters": {
+                            "transactionId": "${json_transform_task_ref.output.result.transactionId}"
+                        },
+                        "type": "SIMPLE"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "failure_notification_task",
+            "taskReferenceName": "failure_notification_task_ref",
+            "inputParameters": {
+                "orderId": "${json_transform_task_ref.output.result.orderId}"
+            },
+            "type": "SIMPLE"
+        }
+    ],
+    "outputParameters": {},
+    "schemaVersion": 2,
+    "restartable": true,
+    "workflowStatusListenerEnabled": false,
+    "ownerEmail": "widyaadeb@gmail.com",
+    "timeoutPolicy": "TIME_OUT_WF"
+}

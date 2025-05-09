@@ -1,0 +1,45 @@
+{
+    "name": "prepaid_payment_http_trigger",
+    "description": "Prepaid payment workflow simulation with payment notification via http",
+    "version": 1,
+    "inputParameters": [
+        "referenceId", "customerId", "productId", "amount", "paymentMethod", "paymentMethodOptions"
+    ],
+    "tasks": [
+        {
+            "name": "harsya_payment_gateway_task",
+            "taskReferenceName": "harsya_payment_gateway_task",
+            "inputParameters": {
+                "referenceNo": "${workflow.input.referenceId}",
+                "paymentMethod": "${workflow.input.paymentMethod}",
+                "paymentMethodOptions": "${workflow.input.paymentMethodOptions}",
+                "amount": "${workflow.input.amount}"
+            },
+            "type": "SIMPLE"
+        },
+        {
+            "name": "harsya_payment_notification",
+            "taskReferenceName": "harsya_payment_notification",
+            "inputParameters": {},
+            "type": "WAIT"
+        },
+        {
+            "name": "ppob_prepaid_payment_task",
+            "taskReferenceName": "ppob_prepaid_payment_task",
+            "inputParameters": {
+                "referenceId": "${workflow.input.referenceId}",
+                "customerId": "${workflow.input.customerId}",
+                "productId": "${workflow.input.productId}"
+            },
+            "type": "SIMPLE"
+        }
+    ],
+    "outputParameters": {
+        "bankReferenceNo": "${harsya_payment_notification.output.bankReferenceNo}"
+    },
+    "schemaVersion": 2,
+    "restartAble": true,
+    "workflowStatusListenerEnabled": false,
+    "ownerEmail": "widyaadeb@gmail.com",
+    "timeoutPolicy": "TIME_OUT_WF"
+}

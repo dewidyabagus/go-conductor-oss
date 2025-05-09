@@ -1,0 +1,62 @@
+{
+    "name": "service_saga_inventory",
+    "description": "Inventory workflow demonstrating saga microservice pattern",
+    "version": 1,
+    "inputParameters": [
+        "orderId", "items"
+    ],
+    "tasks": [
+        {
+            "name": "create_transaction",
+            "taskReferenceName": "create_transaction_ref",
+            "inputParameters": {
+                "orderId": "${workflow.input.orderId}",
+                "items": "${workflow.input.items}"
+            },
+            "type": "SIMPLE"
+        },
+        {
+            "name": "create_inventory",
+            "taskReferenceName": "create_inventory_ref",
+            "inputParameters": {
+                "orderId": "${workflow.input.orderId}",
+                "items": "${workflow.input.items}",
+                "transactionId": "${create_transaction_ref.output.id}",
+                "transactionDate": "${create_transaction_ref.output.date}"
+            },
+            "type": "SIMPLE"
+        },
+        {
+            "name": "create_ledger",
+            "taskReferenceName": "create_ledger_ref",
+            "inputParameters": {
+                "orderId": "${workflow.input.orderId}",
+                "items": "${create_inventory_ref.output.items}",
+                "transactionId": "${create_transaction_ref.output.id}",
+                "transactionDate": "${create_transaction_ref.output.date}"
+            },
+            "type": "SIMPLE"
+        },
+        {
+            "name": "success_notification",
+            "taskReferenceName": "success_notification_ref",
+            "inputParameters": {
+                "orderId": "${workflow.input.orderId}",
+                "transactionId": "${create_transaction_ref.output.id}",
+                "transactionDate": "${create_transaction_ref.output.date}"
+            },
+            "type": "SIMPLE"
+        }
+    ],
+    "outputParameters": {
+        "orderId": "${workflow.input.orderId}",
+        "transactionId": "${create_transaction_ref.output.id}",
+        "journalNo": "${create_ledger_ref.output.journalNo}"
+    },
+    "failureWorkflow": "service_saga_cancellation",
+    "schemaVersion": 2,
+    "restartable": true,
+    "workflowStatusListenerEnabled": false,
+    "ownerEmail": "widyaadeb@gmail.com",
+    "timeoutPolicy": "TIME_OUT_WF"
+}

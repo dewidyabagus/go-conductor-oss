@@ -1,0 +1,93 @@
+services:
+  conductor-server:
+    image: conductor:server
+    container_name: conductor-oss-server
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.5"
+          memory: 512m
+        limits:
+          cpus: "1"
+          memory: 1024m
+    volumes:
+      - ./config/conductor-config.properties:/app/config/conductor-config.properties
+      - ./config/nginx/nginx.conf:/etc/nginx/http.d/default.conf:ro
+      - ./config/nginx/.htpasswd:/etc/nginx/.htpasswd
+    environment:
+      - CONFIG_PROP=conductor-config.properties
+      - JAVA_OPTS=-Dpolyglot.engine.WarnInterpreterOnly=false
+    networks:
+      - internal
+    ports:
+      - 5000:5000
+    healthcheck:
+      test: ["CMD", "curl","-I" ,"-XGET", "http://localhost:8080/health"]
+      interval: 60s
+      timeout: 30s
+      retries: 12
+    links:
+      - conductor-postgres:postgresdb
+      - conductor-redis:rs
+    depends_on:
+      conductor-postgres:
+        condition: service_healthy
+      conductor-redis:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1k"
+        max-file: "3"
+
+  conductor-redis:
+    image: redis:6.2.3-alpine
+    container_name: conductor-oss-redis
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.1"
+          memory: 32m
+        limits:
+          cpus: "0.2"
+          memory: 100m
+    networks:
+      - internal
+    ports:
+      - 7379:6379
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+
+  conductor-postgres:
+    image: postgres:14-alpine3.19
+    container_name: conductor-oss-postgres
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.2"
+          memory: 256m
+        limits:
+          cpus: "1"
+          memory: 512m
+    environment:
+      - POSTGRES_USER=conductor
+      - POSTGRES_PASSWORD=conductor
+    networks:
+      - internal
+    ports:
+      - 6432:5432
+    healthcheck:
+      test: timeout 5 bash -c 'cat < /dev/null > /dev/tcp/localhost/5432'
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1k"
+        max-file: "3"
+
+networks:
+  internal:
+    name: development-net
+    external: true
