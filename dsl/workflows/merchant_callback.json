@@ -1,0 +1,42 @@
+{
+    "name": "merchant_callback",
+    "description": "Send callback to the merchant. If it fails, send a notification email",
+    "version": 1,
+    "inputParameters": [
+        "merchantId", "event", "payload", "additionalInfo"
+    ],
+    "tasks": [
+        {
+            "name": "create_callback_log",
+            "taskReferenceName": "create_callback_log",
+            "inputParameters": {
+                "merchantId": "${workflow.input.merchantId}",
+                "event": "${workflow.input.event}",
+                "payload": "${workflow.input.payload}",
+                "additionalInfo": "${workflow.input.additionalInfo}"
+            },
+            "type": "SIMPLE"
+        },
+        {
+            "name": "send_merchant_callback",
+            "taskReferenceName": "send_merchant_callback",
+            "inputParameters": {
+                "merchantId": "${workflow.input.merchantId}",
+                "event": "${workflow.input.event}",
+                "payload": "${workflow.input.payload}",
+                "additionalInfo": "${workflow.input.additionalInfo}"
+            },
+            "type": "SIMPLE"
+        }
+    ],
+    "outputParameters": {
+        "merchantId": "${workflow.input.merchantId}",
+        "event": "${workflow.input.event}",
+        "payload": "${workflow.input.payload}"
+    },
+    "failureWorkflow": "merchant_callback_failure_workflow",
+    "schemaVersion": 2,
+    "restartAble": true,
+    "workflowStatusListenerEnabled": false,
+    "timeoutPolicy": "ALERT_ONLY"
+}

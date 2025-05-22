@@ -1,0 +1,46 @@
+{
+    "name": "merchant_callback_failure",
+    "description": "Send email notification when callback cannot be delivered to merchant",
+    "version": 1,
+    "inputParameters": [],
+    "tasks": [
+        {
+            "name": "json_transform_task",
+            "taskReferenceName": "json_transform_task",
+            "inputParameters": {
+                "parent": "${workflow.input.failedWorkflow}",
+                "queryExpression": "{ merchantId: .parent.output.merchantId, event: .parent.output.event, payload: .parent.output.payload }"
+            },
+            "type": "JSON_JQ_TRANSFORM"
+        },
+        {
+            "name": "switch_failure_task",
+            "taskReferenceName": "switch_failure_task",
+            "inputParameters": {
+                "failedTaskName": "${json_transform_task.output.result.failedTaskName}"
+            },
+            "evaluatorType": "value-param",
+            "expression": "failedTaskName",
+            "type": "SWITCH",
+            "decisionCases": {
+                "send_merchant_callback": [
+                    {
+                        "name": "email_alert_task",
+                        "taskReferenceName": "email_alert_task",
+                        "inputParameters": {
+                            "merchantId": "${json_transform_task.output.result.merchantId}",
+                            "template": "merchant_callback_failure_${json_transform_task.output.result.event}",
+                            "data": "${json_transform_task.output.result.payload}"
+                        },
+                        "type": "SIMPLE"
+                    }
+                ]
+            }
+        }
+    ],
+    "outputParameters": {},
+    "schemaVersion": 2,
+    "restartAble": true,
+    "workflowStatusListenerEnabled": false,
+    "timeoutPolicy": "ALERT_ONLY"
+}

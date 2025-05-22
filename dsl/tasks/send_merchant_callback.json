@@ -1,0 +1,15 @@
+{
+    "name": "send_merchant_callback",
+    "description": "Send callback to the merchant",
+    "inputKeys": [
+        "merchantId", "event", "payload", "additionalInfo"
+    ],
+    "retryCount": 3,
+    "retryLogic": "FIXED",
+    "retryDelaySeconds": 1,
+    "timeoutSeconds": 30,
+    "timeoutPolicy": "ALERT_ONLY",
+    "responseTimeoutSeconds": 5,
+    "rateLimitFrequencyInSeconds": 1,
+    "rateLimitPerFrequency": 12
+}
