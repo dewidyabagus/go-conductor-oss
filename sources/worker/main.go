@@ -6,16 +6,16 @@ import (
 	"os/signal"
 	"syscall"
 
-	wf "github.com/dewidyabagus/go-payout-workflow/sources/pkg/workflow"
+	"github.com/dewidyabagus/go-payout-workflow/sources/pkg/workflow"
 )
 
 func main() {
 	signal, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 
-	workflow := wf.New(wf.Config{
+	workflow := workflow.New(workflow.Config{
 		BaseURL: "http://localhost:5000/conductor/api",
-		Authorization: &wf.BasicAuth{
+		Authorization: &workflow.BasicAuth{
 			Username: "admin",
 			Password: "qwerty",
 		},

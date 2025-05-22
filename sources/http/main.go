@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
@@ -34,16 +33,6 @@ func main() {
 			workflow: workflow.WorkflowExecutor(),
 		},
 	}
-	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-
-		response, code := map[string]string{"message": "healthy"}, http.StatusOK
-		if err := workflow.HealthCheck(r.Context()); err != nil {
-			response["message"], code = "unhealthy", http.StatusServiceUnavailable
-		}
-		w.WriteHeader(code)
-		_ = json.NewEncoder(w).Encode(response)
-	})
 	r.Post("/ppob/prepaid-payment", handler.PrepaidPaymentHandler)
 	r.Post("/webhooks/harsya/payment-notifications", handler.HarsyaPaymentNotificationHandler)
 

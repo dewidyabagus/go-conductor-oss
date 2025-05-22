@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"time"
 
 	conductor "github.com/conductor-sdk/conductor-go/sdk/model"
@@ -14,14 +15,18 @@ type handler struct {
 	service *service
 }
 
-func (handler) DummyCompletedTask(ctx context.Context, task *conductor.Task) (any, error) {
+func (handler) DummyCompletedTask(_ context.Context, task *conductor.Task) (*conductor.TaskResult, error) {
 	taskResult := conductor.NewTaskResultFromTask(task)
 	taskResult.Status = conductor.CompletedTask
 
 	return taskResult, nil
 }
 
-func (handler) CreateTransactionHandler(_ context.Context, t *conductor.Task) (interface{}, error) {
+func (handler) DummyFailedTask(_ context.Context, task *conductor.Task) (*conductor.TaskResult, error) {
+	return conductor.NewTaskResultFromTaskWithError(task, errors.New("test error")), nil
+}
+
+func (handler) CreateTransactionHandler(_ context.Context, t *conductor.Task) (*conductor.TaskResult, error) {
 	result := conductor.NewTaskResultFromTask(t)
 
 	raw, err := json.Marshal(t.InputData)
@@ -54,7 +59,7 @@ func (handler) CreateTransactionHandler(_ context.Context, t *conductor.Task) (i
 	return result, nil
 }
 
-func (handler) CreateInventoryHandler(_ context.Context, t *conductor.Task) (interface{}, error) {
+func (handler) CreateInventoryHandler(_ context.Context, t *conductor.Task) (*conductor.TaskResult, error) {
 	result := conductor.NewTaskResultFromTask(t)
 
 	raw, err := json.Marshal(t.InputData)
@@ -86,7 +91,7 @@ func (handler) CreateInventoryHandler(_ context.Context, t *conductor.Task) (int
 	return result, nil
 }
 
-func (handler) CreateLedgerHandler(_ context.Context, t *conductor.Task) (interface{}, error) {
+func (handler) CreateLedgerHandler(_ context.Context, t *conductor.Task) (*conductor.TaskResult, error) {
 	result := conductor.NewTaskResultFromTask(t)
 
 	raw, err := json.Marshal(t.InputData)
@@ -118,7 +123,7 @@ func (handler) CreateLedgerHandler(_ context.Context, t *conductor.Task) (interf
 	return result, nil
 }
 
-func (handler) SuccessNotificationHandler(_ context.Context, t *conductor.Task) (any, error) {
+func (handler) SuccessNotificationHandler(_ context.Context, t *conductor.Task) (*conductor.TaskResult, error) {
 	result := conductor.NewTaskResultFromTask(t)
 	result.Status = conductor.CompletedTask
 

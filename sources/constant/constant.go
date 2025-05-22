@@ -15,6 +15,9 @@ const (
 	TaskFailureNotify             = "failure_notification_task"
 	TaskDeleteInventory           = "delete_inventory_task"
 	TaskDeleteTransaction         = "delete_transaction_task"
+	TaskCreateCallbackLog         = "create_callback_log"
+	TaskSendMerchantCallback      = "send_merchant_callback"
+	TaskEmailAlert                = "email_alert_task"
 
 	// Task Domain
 	TaskDomainOpenAPI = "OpenApi"

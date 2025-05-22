@@ -18,5 +18,8 @@ func workerDefinitions(handler *handler) []workflow.WorkerDefinition {
 		{TaskName: constant.TaskDeleteTransaction, Handler: handler.DummyCompletedTask, BatchSize: 1, PollInterval: time.Second},
 		{TaskName: constant.TaskDeleteInventory, Handler: handler.DummyCompletedTask, BatchSize: 1, PollInterval: time.Second},
 		{TaskName: constant.TaskFailureNotify, Handler: handler.DummyCompletedTask, BatchSize: 1, PollInterval: time.Second},
+		{TaskName: constant.TaskCreateCallbackLog, Handler: handler.DummyCompletedTask, BatchSize: 1, PollInterval: time.Second},
+		{TaskName: constant.TaskSendMerchantCallback, Handler: handler.DummyFailedTask, BatchSize: 1, PollInterval: time.Second},
+		{TaskName: constant.TaskEmailAlert, Handler: handler.DummyCompletedTask, BatchSize: 1, PollInterval: time.Second},
 	}
 }

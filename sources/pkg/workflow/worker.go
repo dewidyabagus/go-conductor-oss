@@ -20,7 +20,7 @@ type workers struct {
 
 type WorkerDefinition struct {
 	TaskName     string
-	Handler      func(context.Context, *model.Task) (any, error)
+	Handler      func(context.Context, *model.Task) (*model.TaskResult, error)
 	BatchSize    int
 	PollInterval time.Duration
 	Domain       string
@@ -59,7 +59,7 @@ func (w *workers) RunWorkers(workerDefs []WorkerDefinition) (err error) {
 }
 
 // Note In this section, you can develop custom pre-process and post-process like adding traceId, logs, etc.
-func (w *workers) wrapHandler(fn func(context.Context, *model.Task) (any, error)) func(t *model.Task) (any, error) {
+func (w *workers) wrapHandler(fn func(context.Context, *model.Task) (*model.TaskResult, error)) func(t *model.Task) (any, error) {
 	return func(t *model.Task) (any, error) {
 		atomic.AddInt64(&w.inProgressTask, 1)
 		defer func() { atomic.AddInt64(&w.inProgressTask, -1) }()
