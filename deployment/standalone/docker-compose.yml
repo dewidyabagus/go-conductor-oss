@@ -11,7 +11,7 @@ services:
           cpus: "1"
           memory: 1024m
     volumes:
-      - ./config/conductor-config.properties:/app/config/conductor-config.properties
+      - ../../config/conductor-config.properties:/app/config/conductor-config.properties
       - ./config/nginx/nginx.conf:/etc/nginx/http.d/default.conf:ro
       - ./config/nginx/.htpasswd:/etc/nginx/.htpasswd
     environment:

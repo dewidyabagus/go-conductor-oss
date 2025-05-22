@@ -1,0 +1,160 @@
+services:
+  load-balancer:
+    container_name: conductor-load-balancer
+    image: nginx:stable-alpine3.21
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.1"
+          memory: 64m
+        limits:
+          cpus: "0.2"
+          memory: 128m
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - 7000:7000
+    networks:
+      - development-net
+    depends_on:
+      conductor-backend-01:
+        condition: service_healthy
+      conductor-backend-02:
+        condition: service_healthy
+  conductor-ui:
+    container_name: conductor-ui
+    image: conductor:ui
+    deploy:
+      resources:
+        reservations:
+          cpus: "1"
+          memory: 1000m
+        limits:
+          cpus: "2"
+          memory: 2000m
+    environment:
+      - PORT=5000
+      - REACT_APP_MONACO_EDITOR_USING_CDN=false
+      - REACT_APP_ENABLE_ERRORS_INSPECTOR=true
+      - WF_SERVER=http://conductor-load-balancer:7000
+      - NODE_ENV=development
+    ports:
+      - 5000:5000
+    networks:
+      - development-net
+  conductor-backend-01:
+    container_name: conductor-backend-01
+    image: conductor:backend
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.25"
+          memory: 250m
+        limits:
+          cpus: "0.5"
+          memory: 500m
+    volumes:
+      - ../../config/conductor-config.properties:/app/config/conductor-config.properties
+    environment:
+      - CONFIG_PROP=conductor-config.properties
+      - JAVA_OPTS=-Dpolyglot.engine.WarnInterpreterOnly=false
+    networks:
+      - development-net
+    healthcheck:
+      test: ["CMD", "curl","-I" ,"-XGET", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 30s
+      retries: 12
+    links:
+      - conductor-postgres:postgresdb
+      - conductor-redis:rs
+    depends_on:
+      conductor-postgres:
+        condition: service_healthy
+      conductor-redis:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1k"
+        max-file: "3"
+  conductor-backend-02:
+    container_name: conductor-backend-02
+    image: widyaadebagus/conductor-oss:latest
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.25"
+          memory: 250m
+        limits:
+          cpus: "0.5"
+          memory: 500m
+    volumes:
+      - ../../config/conductor-config.properties:/app/config/conductor-config.properties
+    environment:
+      - CONFIG_PROP=conductor-config.properties
+      - JAVA_OPTS=-Dpolyglot.engine.WarnInterpreterOnly=false
+    networks:
+      - development-net
+    healthcheck:
+      test: ["CMD", "curl","-I" ,"-XGET", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 30s
+      retries: 12
+    links:
+      - conductor-postgres:postgresdb
+      - conductor-redis:rs
+    depends_on:
+      conductor-postgres:
+        condition: service_healthy
+      conductor-redis:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1k"
+        max-file: "3"
+  conductor-redis:
+    image: redis:6.2.3-alpine
+    container_name: conductor-oss-redis
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.1"
+          memory: 32m
+        limits:
+          cpus: "0.2"
+          memory: 100m
+    networks:
+      - development-net
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+  conductor-postgres:
+    image: postgres:14-alpine3.19
+    container_name: conductor-oss-postgres
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.2"
+          memory: 256m
+        limits:
+          cpus: "1"
+          memory: 512m
+    environment:
+      - POSTGRES_USER=conductor
+      - POSTGRES_PASSWORD=conductor
+    networks:
+      - development-net
+    healthcheck:
+      test: timeout 5 bash -c 'cat < /dev/null > /dev/tcp/localhost/5432'
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+networks:
+  development-net:
+    name: development-net
+    external: true
