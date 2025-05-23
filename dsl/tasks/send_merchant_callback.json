@@ -11,5 +11,5 @@
     "timeoutPolicy": "ALERT_ONLY",
     "responseTimeoutSeconds": 5,
     "rateLimitFrequencyInSeconds": 1,
-    "rateLimitPerFrequency": 12
+    "rateLimitPerFrequency": 24
 }
