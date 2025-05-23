@@ -5,11 +5,11 @@ services:
     deploy:
       resources:
         reservations:
-          cpus: "0.5"
-          memory: 512m
+          cpus: "0.7"
+          memory: 300m
         limits:
-          cpus: "1"
-          memory: 1024m
+          cpus: "1.5"
+          memory: 500m
     volumes:
       - ../../config/conductor-config.properties:/app/config/conductor-config.properties
       - ./config/nginx/nginx.conf:/etc/nginx/http.d/default.conf:ro
@@ -64,11 +64,11 @@ services:
     deploy:
       resources:
         reservations:
-          cpus: "0.2"
-          memory: 256m
+          cpus: "0.5"
+          memory: 300m
         limits:
           cpus: "1"
-          memory: 512m
+          memory: 800m
     environment:
       - POSTGRES_USER=conductor
       - POSTGRES_PASSWORD=conductor
